@@ -1,1 +1,17 @@
 .vscode/
+
+# Python / environment
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+*.db
+
+# Kaggle submission artifacts and local notes
+AI Agents_ Intensive Vibe Coding Capstone Project.txt
+READMEold.md
+writeup.md
+ATLAS-Adaptive_Teammate_Leading_At_Success/README.md
+ATLAS-Adaptive_Teammate_Leading_At_Success/writeup.md
