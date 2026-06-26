@@ -9,6 +9,57 @@ const API = '';
 let selectedExperience = null;
 let selectedPreference = null;
 let selectedFrequency = null;
+let demoProfile = null;
+let demoState = { is_onboarded: false, user_profile: null };
+
+const DEMO_EQUIPMENT = [
+    { id: 'adjustable-bench', name: 'Adjustable Bench' },
+    { id: 'dumbbells-15kg', name: '15kg Dumbbells' },
+    { id: 'dumbbells-10kg', name: '10kg Dumbbells' },
+    { id: 'dumbbells-8kg', name: '8kg Dumbbells' },
+    { id: 'dumbbells-5kg', name: '5kg Dumbbells' },
+    { id: 'resistance-band', name: 'Resistance Bands' },
+];
+
+function buildDemoPlan(profile, session) {
+    const timeAvailable = session.time_available || 60;
+    const isCardio = profile.training_preference === 'Cardio' || profile.training_preference === 'Hybrid' || (profile.objectives || []).some(obj => /5k|10k|ride|cardio/i.test(obj));
+    const strengthCount = Math.max(2, Math.floor((timeAvailable - (isCardio ? 60 : 0)) / 10));
+    const warmupMinutes = 5;
+    const strengthMinutes = Math.min(strengthCount, 4) * 10;
+    const cardioMinutes = isCardio ? 60 : 0;
+
+    const exercises = [
+        { name: 'bodyweight squat', sets: 3, reps: '10', load: 'BW', notes: 'Control the tempo and keep the torso tall.' },
+        { name: 'incline push-up', sets: 3, reps: '8-12', load: 'BW', notes: 'Use the bench to keep form consistent.' },
+        { name: 'band row', sets: 3, reps: '12', load: 'band', notes: 'Drive elbows back and avoid shrugging.' },
+    ].slice(0, Math.min(strengthCount, 3));
+
+    return {
+        athlete_nickname: profile.nickname || 'ATHLETE',
+        experience_level: profile.experience_level || 'Beginner',
+        estimated_duration_minutes: warmupMinutes + strengthMinutes + cardioMinutes,
+        warm_up: {
+            title: 'mobility and activation',
+            duration_minutes: warmupMinutes,
+            instructions: [
+                'Perform 2 rounds of arm circles, hip hinges, and marching in place.',
+                'Keep the effort easy and focus on range of motion.',
+            ],
+        },
+        strength_circuit: {
+            title: 'controlled strength circuit',
+            duration_minutes: strengthMinutes,
+            exercises,
+        },
+        cardio_finisher: isCardio ? {
+            title: 'aerobic base finisher',
+            duration_minutes: cardioMinutes,
+            target_heart_rate_bpm: 130,
+            instructions: 'Maintain a steady pace and stay within ±5 BPM of the target heart rate.',
+        } : null,
+    };
+}
 
 // ---- DOM References ----
 const screens = {
@@ -60,21 +111,31 @@ function initSelectorGroups() {
 
 // ---- Equipment Loading ----
 async function loadEquipment() {
+    const grid = document.getElementById('equipment-grid');
+    if (!grid) return;
+
     try {
         const res = await fetch(`${API}/api/equipment`);
+        if (!res.ok) throw new Error('backend unavailable');
         const items = await res.json();
-        const grid = document.getElementById('equipment-grid');
-        grid.innerHTML = '';
-        
-        items.forEach(item => {
-            const label = document.createElement('label');
-            label.className = 'chk-label';
-            label.innerHTML = `<input type="checkbox" value="${item.id}"><span class="chk-box"></span>${item.name.toUpperCase()}`;
-            grid.appendChild(label);
-        });
+        renderEquipment(items);
     } catch (err) {
-        console.error('Failed to load equipment:', err);
+        console.info('Using built-in demo equipment list.');
+        renderEquipment(DEMO_EQUIPMENT);
     }
+}
+
+function renderEquipment(items) {
+    const grid = document.getElementById('equipment-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    items.forEach(item => {
+        const label = document.createElement('label');
+        label.className = 'chk-label';
+        label.innerHTML = `<input type="checkbox" value="${item.id}"><span class="chk-box"></span>${item.name.toUpperCase()}`;
+        grid.appendChild(label);
+    });
 }
 
 // ---- Energy Slider ----
@@ -143,6 +204,8 @@ async function handleOnboarding(e) {
         if (data.success) {
             showFeedback(data.message, true);
             setTimeout(() => {
+                demoProfile = payload;
+                demoState = { is_onboarded: true, user_profile: payload };
                 renderProfileBar(payload);
                 showScreen('session');
             }, 800);
@@ -150,7 +213,13 @@ async function handleOnboarding(e) {
             showFeedback(data.message, false);
         }
     } catch (err) {
-        showFeedback('COMMS ERROR: Failed to reach server.', false);
+        demoProfile = payload;
+        demoState = { is_onboarded: true, user_profile: payload };
+        showFeedback('DEMO MODE: Profile captured locally. You can continue without the backend.', true);
+        setTimeout(() => {
+            renderProfileBar(payload);
+            showScreen('session');
+        }, 800);
     } finally {
         btn.disabled = false;
         btn.querySelector('.btn-icon').textContent = '▸';
@@ -208,10 +277,12 @@ async function handleSession(e) {
             renderWorkoutPlan(data.workout_plan);
             showScreen('workout');
         } else {
-            alert('Failed to compile plan: ' + (data.detail || 'Unknown error'));
+            throw new Error(data.detail || 'Unknown error');
         }
     } catch (err) {
-        alert('COMMS ERROR: Failed to reach server.');
+        const plan = buildDemoPlan(demoProfile || {}, payload);
+        renderWorkoutPlan(plan);
+        showScreen('workout');
     } finally {
         btn.disabled = false;
         loader.classList.add('hidden');
@@ -325,17 +396,19 @@ async function handleReset() {
     if (!confirm('CONFIRM SYSTEM RESET?\nThis will erase your profile and return to registration.')) return;
     try {
         await fetch(`${API}/api/reset`, { method: 'POST' });
-        // Reset local state
-        selectedExperience = null;
-        selectedPreference = null;
-        selectedFrequency = null;
-        document.querySelectorAll('.sel-btn.selected').forEach(b => b.classList.remove('selected'));
-        document.getElementById('onboarding-form').reset();
-        hideFeedback();
-        showScreen('register');
     } catch (err) {
-        alert('Reset failed.');
+        // Demo mode fallback: ignore and continue locally.
     }
+
+    selectedExperience = null;
+    selectedPreference = null;
+    selectedFrequency = null;
+    demoProfile = null;
+    demoState = { is_onboarded: false, user_profile: null };
+    document.querySelectorAll('.sel-btn.selected').forEach(b => b.classList.remove('selected'));
+    document.getElementById('onboarding-form').reset();
+    hideFeedback();
+    showScreen('register');
 }
 
 // ---- Init ----
@@ -354,12 +427,15 @@ async function init() {
         const res = await fetch(`${API}/api/state`);
         const state = await res.json();
         if (state.is_onboarded && state.user_profile) {
+            demoProfile = state.user_profile;
+            demoState = state;
             renderProfileBar(state.user_profile);
             showScreen('session');
         } else {
             showScreen('register');
         }
     } catch {
+        demoState = { is_onboarded: false, user_profile: null };
         showScreen('register');
     }
 }

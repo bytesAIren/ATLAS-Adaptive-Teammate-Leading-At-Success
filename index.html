@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="ATLAS live demo for GitHub Pages — a safe, adaptive AI coaching experience for home workouts." />
+  <title>ATLAS Live Demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #06111d;
+      --panel: #0f2135;
+      --panel-2: #122c44;
+      --text: #f3f7ff;
+      --muted: #8ea0b8;
+      --accent: #4dd0ff;
+      --accent-2: #7b8cff;
+      --good: #52d8a8;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, #15304c 0%, var(--bg) 50%, #03070c 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: inherit; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 24px; }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      align-items: center;
+      padding: 42px 0 32px;
+    }
+    .badge {
+      display: inline-block;
+      border: 1px solid rgba(77,208,255,0.35);
+      background: rgba(77,208,255,0.12);
+      color: var(--accent);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    h1 { font-size: clamp(2rem, 3.2vw, 3.2rem); margin: 0 0 12px; line-height: 1.1; }
+    .lead { font-size: 1.05rem; color: var(--muted); max-width: 700px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      border: 1px solid transparent;
+      transition: transform 150ms ease, opacity 150ms ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: #031018; }
+    .btn-secondary { border-color: rgba(255,255,255,0.16); background: rgba(255,255,255,0.05); }
+
+    .card {
+      background: rgba(15, 33, 53, 0.92);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    }
+    .card h2 { margin-top: 0; }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .feature {
+      background: var(--panel-2);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .feature h3 { margin: 0 0 8px; font-size: 1rem; }
+    .feature p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .step {
+      background: rgba(255,255,255,0.04);
+      border-radius: 14px;
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .step strong { display: block; margin-bottom: 6px; color: var(--accent); }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 860px) {
+      .hero, .feature-grid, .steps { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <div class="badge">GitHub Pages demo</div>
+        <h1>ATLAS is ready for a live preview.</h1>
+        <p class="lead">
+          This project turns a home-workout idea into a safety-aware coaching experience. The published demo showcases the onboarding flow, session planning logic, and the final workout plan in a lightweight, browser-based experience.
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="./static/index.html">Open the interactive demo</a>
+          <a class="btn btn-secondary" href="https://github.com/bytesAIren/ATLAS-Adaptive-Teammate-Leading-At-Success">View source</a>
+        </div>
+        <div class="meta">
+          <span>Static GitHub Pages compatible</span>
+          <span>•</span>
+          <span>Demo mode available without the Python backend</span>
+          <span>•</span>
+          <span>Safe, conservative planning rules</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>What the demo includes</h2>
+        <div class="feature-grid">
+          <div class="feature">
+            <h3>Onboarding</h3>
+            <p>Captures profile details, equipment, and goals in a structured flow.</p>
+          </div>
+          <div class="feature">
+            <h3>Session planning</h3>
+            <p>Applies time, injury, and equipment constraints to create a practical plan.</p>
+          </div>
+          <div class="feature">
+            <h3>Safety logic</h3>
+            <p>Uses conservative defaults so the experience remains usable and responsible.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Demo flow</h2>
+      <div class="steps">
+        <div class="step">
+          <strong>01. Register</strong>
+          Enter basic profile details and select your training direction.
+        </div>
+        <div class="step">
+          <strong>02. Configure</strong>
+          Add available time, energy level, and injury notes for the session.
+        </div>
+        <div class="step">
+          <strong>03. Review plan</strong>
+          See a tailored workout structure and the key coaching cues.</n>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -77,6 +77,7 @@ The project is organized around a simple but effective agent-inspired architectu
 
 ```text
 ATLAS-Adaptive_Teammate_Leading_At_Success/
+├── index.html                # GitHub Pages landing page for the live demo
 ├── src/
 │   ├── api.py
 │   ├── runtime_bootstrap.py
@@ -84,9 +85,10 @@ ATLAS-Adaptive_Teammate_Leading_At_Success/
 │   ├── graph/
 │   └── schemas/
 ├── static/
-│   ├── index.html
+│   ├── index.html            # interactive frontend app shell
 │   ├── css/
 │   └── js/
+├── media_gallery/            # screenshots, cover image, and presentation video
 ├── scratch/
 ├── requirements.txt
 └── run_api.py
@@ -117,6 +119,10 @@ ATLAS-Adaptive_Teammate_Leading_At_Success/
 3. The system builds a safe state and compiles the active workout constraints.
 4. The planning layer determines what is appropriate for the current session.
 5. A workout plan is generated and returned to the user in a structured format.
+
+## Live Demo
+
+A lightweight landing page for a GitHub Pages deployment is available at [index.html](index.html). It provides a simple overview of the project and a direct entry point to the interactive demo experience.
 
 ## Setup Instructions
 
@@ -169,13 +175,14 @@ Possible next steps include:
 
 ## Kaggle submission assets
 
-To keep the Kaggle submission organized, the project now includes dedicated folders for the required public assets:
+To keep the Kaggle submission organized, the project includes a dedicated folder for the required public assets:
 
-- Media Gallery: [media_gallery](ATLAS-Adaptive_Teammate_Leading_At_Success/media_gallery/) — add screenshots, architecture diagrams, and the final cover image here.
-- Public Video: [videos](ATLAS-Adaptive_Teammate_Leading_At_Success/videos/) — upload the final 5-minute public video here. Once the video is published on YouTube, replace the placeholder link in the Kaggle writeup.
-- Attached Project Link: [public_site](ATLAS-Adaptive_Teammate_Leading_At_Success/public_site/) — use this folder for the public demo bundle or deployment artifacts. Later, add the final public URL here (GitHub Pages, Google Cloud, or another hosting option).
-
-These folders are meant to be placeholders for now and will be filled in before the final submission.
+- Media Gallery: [media_gallery](media_gallery/) — includes screenshots of the app flow, the project cover image, and the presentation video.
+  - [media_gallery/atlas-cover.png](media_gallery/atlas-cover.png)
+  - [media_gallery/Screenshot 2026-06-25 221313.png](media_gallery/Screenshot%202026-06-25%20221313.png)
+  - [media_gallery/Screenshot 2026-06-25 221458.png](media_gallery/Screenshot%202026-06-25%20221458.png)
+  - [media_gallery/Screenshot 2026-06-25 221746.png](media_gallery/Screenshot%202026-06-25%20221746.png)
+  - [media_gallery/ATLAS__Agentic_Fitness.mp4](media_gallery/ATLAS__Agentic_Fitness.mp4)
 
 ## Conclusion
 
