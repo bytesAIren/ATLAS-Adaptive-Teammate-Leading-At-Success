@@ -1,6 +1,6 @@
 # ATLAS - Adaptive Teammate Leading At Success
 
-![ATLAS cover image](ATLAS-Adaptive_Teammate_Leading_At_Success/media_gallery/ATLAS%20—%20Adaptive%20Teammate%20Leading%20At%20Success.png)
+![ATLAS cover image](media_gallery/ATLAS — Adaptive Teammate Leading At Success.png)
 
 A safe, adaptive AI coaching experience for home workouts built with agent-style planning, validation, and safety checks.
 
