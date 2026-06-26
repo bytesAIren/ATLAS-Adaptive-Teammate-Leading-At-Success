@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="ATLAS live demo for GitHub Pages — a safe, adaptive AI coaching experience for home workouts." />
-  <title>ATLAS Live Demo</title>
+  <meta name="description" content="ATLAS preview for GitHub Pages - explore the UI publicly and run the full agentic app locally." />
+  <title>ATLAS Preview</title>
   <style>
     :root {
       color-scheme: dark;
@@ -16,6 +16,7 @@
       --accent: #4dd0ff;
       --accent-2: #7b8cff;
       --good: #52d8a8;
+      --warn: #ffd166;
     }
 
     * { box-sizing: border-box; }
@@ -33,7 +34,7 @@
       display: grid;
       grid-template-columns: 1.2fr 0.8fr;
       gap: 24px;
-      align-items: center;
+      align-items: start;
       padding: 42px 0 32px;
     }
     .badge {
@@ -74,33 +75,33 @@
       box-shadow: 0 20px 50px rgba(0,0,0,0.2);
     }
     .card h2 { margin-top: 0; }
-    .feature-grid {
+    .feature-grid,
+    .steps {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 16px;
       margin-top: 18px;
     }
-    .feature {
+    .feature,
+    .step {
       background: var(--panel-2);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 16px;
       padding: 16px;
     }
-    .feature h3 { margin: 0 0 8px; font-size: 1rem; }
-    .feature p { margin: 0; color: var(--muted); font-size: 0.95rem; }
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 18px;
+    .feature h3,
+    .step strong {
+      margin: 0 0 8px;
+      color: var(--accent);
+      display: block;
+      font-size: 1rem;
     }
-    .step {
-      background: rgba(255,255,255,0.04);
-      border-radius: 14px;
-      padding: 14px;
-      border: 1px solid rgba(255,255,255,0.08);
+    .feature p,
+    .step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
     }
-    .step strong { display: block; margin-bottom: 6px; color: var(--accent); }
     .meta {
       display: flex;
       flex-wrap: wrap;
@@ -108,6 +109,18 @@
       color: var(--muted);
       font-size: 0.95rem;
       margin-top: 16px;
+    }
+    .notice {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+    }
+    .notice strong {
+      color: var(--warn);
+      display: block;
+      margin-bottom: 6px;
     }
 
     @media (max-width: 860px) {
@@ -119,57 +132,79 @@
   <main class="wrap">
     <section class="hero">
       <div>
-        <div class="badge">GitHub Pages demo</div>
-        <h1>ATLAS is ready for a live preview.</h1>
+        <div class="badge">GitHub Pages preview</div>
+        <h1>ATLAS is ready for a public preview.</h1>
         <p class="lead">
-          This project turns a home-workout idea into a safety-aware coaching experience. The published demo showcases the onboarding flow, session planning logic, and the final workout plan in a lightweight, browser-based experience.
+          This page lets people explore the interface, workflow, and presentation of ATLAS in the browser. It is designed as a lightweight public preview, while the full agentic experience runs through the local Python backend.
         </p>
         <div class="actions">
-          <a class="btn btn-primary" href="./static/index.html">Open the interactive demo</a>
+          <a class="btn btn-primary" href="./static/index.html">Open Preview UI</a>
           <a class="btn btn-secondary" href="https://github.com/bytesAIren/ATLAS-Adaptive-Teammate-Leading-At-Success">View source</a>
         </div>
         <div class="meta">
-          <span>Static GitHub Pages compatible</span>
-          <span>•</span>
-          <span>Demo mode available without the Python backend</span>
-          <span>•</span>
-          <span>Safe, conservative planning rules</span>
+          <span>GitHub Pages friendly</span>
+          <span>-</span>
+          <span>Preview UI without backend APIs</span>
+          <span>-</span>
+          <span>Full workflow available locally</span>
+        </div>
+        <div class="notice">
+          <strong>This public version is a preview, not the full backend-powered app.</strong>
+          The GitHub Pages experience does not include the FastAPI server, so it cannot run the full validation, planning, generation, and critic-review pipeline. To try the real end-to-end ATLAS experience, download the project from GitHub and run it locally.
         </div>
       </div>
 
       <div class="card">
-        <h2>What the demo includes</h2>
+        <h2>What the preview shows</h2>
         <div class="feature-grid">
           <div class="feature">
-            <h3>Onboarding</h3>
-            <p>Captures profile details, equipment, and goals in a structured flow.</p>
+            <h3>Onboarding UI</h3>
+            <p>Browse the registration flow, including profile fields, equipment selection, and session-oriented structure.</p>
           </div>
           <div class="feature">
-            <h3>Session planning</h3>
-            <p>Applies time, injury, and equipment constraints to create a practical plan.</p>
+            <h3>Planning shape</h3>
+            <p>See how the product is organized around constraints, session setup, and a structured workout output.</p>
           </div>
           <div class="feature">
-            <h3>Safety logic</h3>
-            <p>Uses conservative defaults so the experience remains usable and responsible.</p>
+            <h3>Safety-first design</h3>
+            <p>Understand the positioning of the project as a conservative, guardrailed planning assistant rather than a free-form chatbot.</p>
           </div>
         </div>
       </div>
     </section>
 
     <section class="card">
-      <h2>Demo flow</h2>
+      <h2>Preview vs. Full Experience</h2>
+      <div class="steps">
+        <div class="step">
+          <strong>Preview on GitHub Pages</strong>
+          <p>Open the UI, inspect the flow, and explore the product without installing anything.</p>
+        </div>
+        <div class="step">
+          <strong>Run locally for the real workflow</strong>
+          <p>Start the Python backend to unlock live equipment loading, onboarding validation, session generation, and critic review.</p>
+        </div>
+        <div class="step">
+          <strong>Experience the agentic path</strong>
+          <p>Use the local version to try the full validation, planning, generation, and review pipeline that powers ATLAS.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Typical User Flow</h2>
       <div class="steps">
         <div class="step">
           <strong>01. Register</strong>
-          Enter basic profile details and select your training direction.
+          <p>Enter basic profile details and select training direction, equipment, and goals.</p>
         </div>
         <div class="step">
           <strong>02. Configure</strong>
-          Add available time, energy level, and injury notes for the session.
+          <p>Add available time, energy level, and injury notes for the current session.</p>
         </div>
         <div class="step">
           <strong>03. Review plan</strong>
-          See a tailored workout structure and the key coaching cues.</n>
+          <p>See a tailored workout structure shaped by constraints, safety checks, and planning rules.</p>
         </div>
       </div>
     </section>

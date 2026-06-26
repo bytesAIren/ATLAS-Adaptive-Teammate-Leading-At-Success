@@ -15,6 +15,7 @@ const FALLBACK_EQUIPMENT = [
     { id: 'kettlebell', name: 'Kettlebell' },
     { id: 'jump_rope', name: 'Jump Rope' },
 ];
+let isPreviewMode = false;
 
 // ---- State ----
 let selectedExperience = null;
@@ -50,6 +51,13 @@ function updateClock() {
 }
 setInterval(updateClock, 1000);
 updateClock();
+
+function setPreviewMode(enabled) {
+    isPreviewMode = enabled;
+    const banner = document.getElementById('preview-banner');
+    if (!banner) return;
+    banner.classList.toggle('hidden', !enabled);
+}
 
 // ---- Selector Buttons ----
 function initSelectorGroups() {
@@ -88,9 +96,11 @@ async function loadEquipment() {
         const res = await fetch(`${API}/api/equipment`);
         if (!res.ok) throw new Error(`Equipment request failed with status ${res.status}`);
         const items = await res.json();
+        setPreviewMode(false);
         renderEquipmentList(items);
     } catch (err) {
         console.error('Failed to load equipment:', err);
+        setPreviewMode(true);
         renderEquipmentList(FALLBACK_EQUIPMENT);
     }
 }
@@ -172,7 +182,8 @@ async function handleOnboarding(e) {
             showFeedback(data.message, false);
         }
     } catch (err) {
-        showFeedback('COMMS ERROR: Failed to reach server.', false);
+        setPreviewMode(true);
+        showFeedback('PREVIEW MODE: Backend API unavailable. To try the real ATLAS agentic workflow, run the project locally and open it through the Python server.', false);
     } finally {
         btn.disabled = false;
         btn.querySelector('.btn-icon').textContent = '▸';
@@ -238,7 +249,8 @@ async function handleSession(e) {
             alert('Failed to compile plan: ' + (data.detail || 'Unknown error'));
         }
     } catch (err) {
-        alert('COMMS ERROR: Failed to reach server.');
+        setPreviewMode(true);
+        alert('PREVIEW MODE: Session generation requires the local backend API. Run the project locally to try the full ATLAS workflow.');
     } finally {
         btn.disabled = false;
         loader.classList.add('hidden');
@@ -438,7 +450,8 @@ async function handleReset() {
         hideFeedback();
         showScreen('register');
     } catch (err) {
-        alert('Reset failed.');
+        setPreviewMode(true);
+        alert('Preview mode active: reset requires the backend API.');
     }
 }
 
@@ -457,6 +470,7 @@ async function init() {
     try {
         const res = await fetch(`${API}/api/state`);
         const state = await res.json();
+        setPreviewMode(false);
         if (state.is_onboarded && state.user_profile) {
             renderProfileBar(state.user_profile);
             showScreen('session');
@@ -464,6 +478,7 @@ async function init() {
             showScreen('register');
         }
     } catch {
+        setPreviewMode(true);
         showScreen('register');
     }
 }

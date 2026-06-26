@@ -176,7 +176,12 @@ def create_session(payload: SessionRequestPayload):
 @app.middleware("http")
 async def add_no_cache_headers(request, call_next):
     response: Response = await call_next(request)
-    if request.url.path == "/" or request.url.path.startswith("/static/"):
+    if (
+        request.url.path == "/"
+        or request.url.path.startswith("/static/")
+        or request.url.path.startswith("/css/")
+        or request.url.path.startswith("/js/")
+    ):
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
@@ -197,6 +202,8 @@ def serve_root():
 
 # Mount static assets (CSS, JS) — must be after all API routes
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+app.mount("/css", StaticFiles(directory=os.path.join(STATIC_DIR, "css")), name="css")
+app.mount("/js", StaticFiles(directory=os.path.join(STATIC_DIR, "js")), name="js")
 
 if __name__ == "__main__":
     import uvicorn
