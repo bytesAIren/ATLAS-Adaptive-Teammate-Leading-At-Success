@@ -5,124 +5,169 @@
 </p>
 
 <p align="center"><em><strong>
-  A safe, adaptive AI coaching experience for home workouts built with agent-style planning, validation, and safety checks.
-</em></strong></p>
+  A safety-first workout planner powered by an agent-inspired workflow.
+</strong></em></p>
 
 ## Overview
 
-ATLAS - Adaptive Teammate Leading At Success is a practical AI agent system designed to help people train safely at home with limited equipment and changing constraints. The project combines a lightweight web interface with an agent-inspired backend that validates user input, compiles workout rules, and produces a personalized session plan.
+ATLAS - Adaptive Teammate Leading At Success is a home-workout planning application designed to help people train more safely with limited equipment, changing daily constraints, and uneven confidence about what is appropriate to do.
 
-This project was built as a Kaggle AI Agents capstone submission and is intended to demonstrate how agent-based design can turn a simple fitness idea into a usable, structured, and safety-aware experience.
+The project combines a lightweight web interface with an agent-inspired backend workflow. Instead of relying on free-form generation alone, ATLAS validates user input, applies safety guardrails, compiles session constraints, generates a workout plan, and reviews the output before returning it to the user.
+
+This repository was built as a Kaggle AI Agents capstone submission. The goal was not to build the largest possible fitness platform in two weeks, but to demonstrate how staged reasoning, deterministic safety enforcement, and selective AI support can create a useful, working product around a real-world problem.
 
 ## The Problem
 
-Many people want to exercise at home, but they often face one or more of the following challenges:
+Training at home sounds simple, but in practice it is often messy.
+
+Many people face one or more of these challenges:
 
 - limited time and inconsistent routines
 - uncertainty about which exercises are appropriate for their body and equipment
-- risk of overtraining or using movements that are unsafe for their current condition
-- lack of personalized guidance when training alone at home
+- risk of overdoing movements that are unsafe for their current condition
+- lack of personalized structure when training alone
 
-A generic workout app often fails to account for these real-world constraints. ATLAS - Adaptive Teammate Leading At Success tries to address this by making planning adaptive, conservative, and transparent.
+A generic workout generator often fails because it ignores context. A beginner with a sore knee, a bench, and a short session window should not receive the same plan as an advanced user with more equipment and no physical limitations.
 
-## The Solution
+ATLAS is designed to address that gap by making planning adaptive, conservative, and practical.
 
-ATLAS - Adaptive Teammate Leading At Success acts like a personal trainer assistant that:
+## Why This Needed More Than A Simple Generator
 
-- collects user profile information during onboarding
-- validates the input to prevent invalid or unsafe configurations
-- applies session-specific constraints such as injuries, time availability, and equipment limits
-- generates a workout plan that is safe, practical, and tailored to the user
-- uses a layered architecture of validation, planning, and safety nodes to make decisions more structured and explainable
+A useful fitness system cannot just output exercises that sound plausible. It needs to:
 
-The system is intentionally designed to be more than a static workout generator. It behaves like a small multi-step agent workflow where each component has a clear role in producing a safer and more useful outcome.
+- validate what the user entered
+- adapt to the realities of the current session
+- respect equipment and safety constraints
+- review the final recommendation before presenting it
 
-## Why This Project Fits the Kaggle Capstone
+That makes this a strong fit for an agent-inspired workflow. The value is not unconstrained creativity. The value is judgment under constraints.
 
-This submission demonstrates several core ideas from the AI agents course:
+## Why Agents
 
-- agent-style workflow design
-- state management and structured decision-making
-- validation and safety guardrails
-- deterministic planning with user-specific constraints
-- practical deployment as a web app
+ATLAS is not presented as a full autonomous multi-agent platform. Instead, it uses a single-agent workflow with specialized stages:
 
-The project focuses on a meaningful real-world problem and shows how agent-based systems can provide value beyond a simple demo.
+- `validator`: checks onboarding input and converts it into structured state
+- `safety sandbox`: protects the user when onboarding is incomplete
+- `planning node`: compiles profile data, session context, injuries, time, and equipment into hard constraints
+- `generator`: composes a workout plan inside those boundaries
+- `critic`: reviews the output and normalizes it if anything drifts outside the rules
+
+This structure is what makes the system feel agentic. The project combines AI-assisted clarification and constrained plan generation with deterministic safety enforcement.
+
+## How ATLAS Works
+
+ATLAS follows a concrete five-step workflow:
+
+1. **Onboarding validation**  
+   The user provides profile details such as age, experience level, training preference, available equipment, and objectives. Pydantic validation checks that the data is usable and within safe bounds.
+
+2. **Safe default state**  
+   If onboarding is incomplete or invalid, the app falls back to a conservative default-safe state. In that mode, higher-risk movements remain locked.
+
+3. **Session constraint patching**  
+   The user configures a workout session with local context such as energy, temporary injuries, goals, and available time. These session constraints downscope the profile rather than overwrite it.
+
+4. **Planning and workout composition**  
+   The planner compiles the effective rules for the session, including time budget, movement allowlists, injury-related restrictions, squat load limits, cardio behavior, and equipment availability. The generator then builds a plan inside those limits.
+
+5. **Critic review before return**  
+   Before the plan is returned, a critic layer checks it against the compiled rules. If needed, the output is normalized or replaced by a deterministic fallback.
+
+The session response also includes an `agent_trace`, allowing the UI to show the major stages behind the recommendation.
+
+## A Concrete Example Of Value
+
+Consider a user with limited time, a bench, dumbbells, and lower-back discomfort.
+
+A generic workout generator might still propose a risky hinge pattern, an unrealistic cardio block, or too much lower-body volume. ATLAS instead validates the user profile, applies temporary restrictions, checks effective equipment, narrows the movement pool, respects hard load limits, and composes a session that still feels practical and actionable.
+
+That is the core behavior of the system: not simply producing a workout, but narrowing the plan through safety and context until it becomes realistic for the person using it.
 
 ## Architecture
 
-The project is organized around a simple but effective agent-inspired architecture:
+The backend is organized around a small set of role-based modules:
 
-1. Onboarding and Validation
-   - collects and validates user information
-   - converts raw input into a structured profile
+1. **Validation**
+   - validates onboarding payloads with Pydantic
+   - returns natural-language clarification when inputs are invalid
 
-2. Safety Layer
-   - ensures the user starts in a safe baseline state when onboarding is incomplete
-   - blocks risky or inappropriate movements based on context
+2. **Safety**
+   - activates the default-safe state when onboarding is incomplete
+   - blocks unsafe recommendations before planning proceeds
 
-3. Planning Layer
-   - compiles constraints from the user profile and the active session
-   - downscopes the plan to respect injuries, time availability, and equipment
+3. **Planning**
+   - combines `UserProfile` and `SessionContext`
+   - applies downscoping rules for injuries, equipment, and time
+   - compiles hard constraints such as squat load and cardio budget
 
-4. Generation and Review
-   - creates a workout plan
-   - reviews it against the rules to ensure the output stays within safe boundaries
+4. **Generation**
+   - creates a structured workout plan inside the compiled limits
+   - uses Gemini as an optional constrained assistance layer
 
-5. Web Interface
-   - presents the experience through a lightweight front end
-   - exposes the backend through a FastAPI service
+5. **Critic Review**
+   - checks the plan against the authoritative rules
+   - approves, normalizes, or rebuilds the output when required
+
+6. **Frontend**
+   - provides onboarding, session setup, and workout review through a lightweight static UI
+   - surfaces active constraints and planning trace data from the backend
 
 ## Project Structure
 
 ```text
 ATLAS-Adaptive_Teammate_Leading_At_Success/
-├── index.html                # GitHub Pages landing page for the live demo
-├── src/
-│   ├── api.py
-│   ├── runtime_bootstrap.py
-│   ├── database/
-│   ├── graph/
-│   └── schemas/
-├── static/
-│   ├── index.html            # interactive frontend app shell
-│   ├── css/
-│   └── js/
-├── media_gallery/            # screenshots, cover image, and presentation video
-├── scratch/
-├── requirements.txt
-└── run_api.py
+|-- index.html                # GitHub Pages landing page
+|-- src/
+|   |-- api.py
+|   |-- runtime_bootstrap.py
+|   |-- database/
+|   |-- graph/
+|   `-- schemas/
+|-- static/
+|   |-- index.html            # interactive frontend app shell
+|   |-- css/
+|   `-- js/
+|-- media_gallery/            # screenshots, cover image, and submission video
+|-- scratch/
+|-- requirements.txt
+`-- run_api.py
 ```
 
 ## Key Features
 
-- onboarding flow with structured validation
+- structured onboarding flow with validation and clarification feedback
 - personalized workout planning based on user profile and session constraints
-- injury-aware and equipment-aware logic
+- injury-aware, equipment-aware, and time-aware planning logic
 - safe default state for incomplete or unvalidated onboarding
-- lightweight web app experience
-- deterministic and explainable planning rules
+- visible planning trace and critic review feedback in the session response
+- deterministic fallback behavior when AI assistance is unavailable
 
 ## Technical Stack
 
 - Python
 - FastAPI
 - Pydantic
-- SQLite
+- SQLite-backed exercise and equipment catalog
 - HTML/CSS/JavaScript
-- Google Gemini integration for natural-language validation and coaching support
+- Google Gemini as an optional assistance layer for clarification and constrained plan generation
 
-## How It Works
+## Current Implementation Notes
 
-1. A user provides personal information and training preferences.
-2. The validation layer checks that the input is structurally valid.
-3. The system builds a safe state and compiles the active workout constraints.
-4. The planning layer determines what is appropriate for the current session.
-5. A workout plan is generated and returned to the user in a structured format.
+- The active graph state is stored in application memory for the running server process.
+- SQLite is currently used for the exercise and equipment catalog, not as full long-term user-state persistence.
+- The app works without a Gemini API key by falling back to deterministic validation messaging and deterministic workout composition rules.
 
-## Live Demo
+## Why This Fits The Kaggle Capstone
 
-A lightweight landing page for a GitHub Pages deployment is available at [index.html](index.html). It provides a simple overview of the project and a direct entry point to the interactive demo experience.
+This project was intentionally shaped to align with the capstone brief:
+
+- it addresses a meaningful real-world personal-use problem
+- it includes a working interactive application rather than a concept-only demo
+- it demonstrates visible agent concepts through staged reasoning and review
+- it emphasizes safety-aware design instead of unconstrained output generation
+- it provides reproducible local setup and clear project documentation
+
+The project is especially well suited to the `Concierge Agents` framing because it tackles an everyday personal challenge in a way that is practical, supportive, and safety-conscious.
 
 ## Setup Instructions
 
@@ -143,47 +188,63 @@ pip install -r requirements.txt
 python run_api.py
 ```
 
-The application will be available locally through the FastAPI server.
+The application will be available locally through the FastAPI server at `http://127.0.0.1:8000`.
 
 ## Environment Variables
 
-The app expects a Gemini API key to be available in the environment.
+Gemini is optional but recommended if you want the AI-assisted clarification and constrained generation path.
 
 ```bash
 export GEMINI_API_KEY="your_api_key_here"
 ```
 
-## Safety and Design Choices
+On Windows PowerShell:
 
-Safety is a central part of this project rather than an afterthought. The system is intentionally conservative when user information is incomplete or invalid, and it avoids generating unsafe plans by default.
+```powershell
+$env:GEMINI_API_KEY="your_api_key_here"
+```
 
-This design choice makes the project more useful for real users, especially in contexts where a poor recommendation could lead to injury or frustration.
+## Demo And Public Assets
 
-## Why It Matters
+- [index.html](index.html) is a GitHub Pages-friendly landing page for the project.
+- The full interactive experience requires the Python backend to be running.
+- If a fully hosted public demo is not available, this repository is intended to satisfy the capstone requirement for a public project link with reproducible setup instructions.
 
-This project shows that AI agents do not need to be overly complex to deliver value. A well-structured workflow with clear roles, guardrails, and practical outcomes can solve a real problem in a way that is understandable, safe, and deployable.
+## Kaggle Submission Assets
 
-## Future Directions
+To keep the Kaggle submission organized, the repository includes a dedicated folder for public assets:
 
-Possible next steps include:
-
-- adding a richer conversational coaching experience
-- integrating a more advanced planner or multi-agent workflow
-- expanding the exercise and injury logic
-- improving the frontend experience and visual feedback
-- adding persistent user history and better personalization
-
-## Kaggle submission assets
-
-To keep the Kaggle submission organized, the project includes a dedicated folder for the required public assets:
-
-- Media Gallery: [media_gallery](media_gallery/) — includes screenshots of the app flow, the project cover image, and the presentation video.
-  - [media_gallery/atlas-cover.png](media_gallery/atlas-cover.png)
+- Media Gallery: [media_gallery](media_gallery/)
+- Cover image: [media_gallery/atlas-cover.png](media_gallery/atlas-cover.png)
+- Screenshots:
   - [media_gallery/Screenshot 2026-06-25 221313.png](media_gallery/Screenshot%202026-06-25%20221313.png)
   - [media_gallery/Screenshot 2026-06-25 221458.png](media_gallery/Screenshot%202026-06-25%20221458.png)
   - [media_gallery/Screenshot 2026-06-25 221746.png](media_gallery/Screenshot%202026-06-25%20221746.png)
-  - [media_gallery/ATLAS__Agentic_Fitness.mp4](media_gallery/ATLAS__Agentic_Fitness.mp4)
+- Submission video: [media_gallery/ATLAS__Agentic_Fitness.mp4](media_gallery/ATLAS__Agentic_Fitness.mp4)
+
+## Safety And Design Choices
+
+Safety is central to the project rather than an afterthought. The system is intentionally conservative when user information is incomplete or invalid, and it avoids generating unsafe plans by default.
+
+That makes the application more useful for real users, especially in a domain where poor recommendations can lead to frustration, overtraining, or injury risk.
+
+## Future Directions
+
+With modest additional time, ATLAS could grow in a few practical directions:
+
+- a natural-language session interpreter that converts free-form requests into structured session constraints
+- richer explanation layers that show why exercises were included, removed, or downgraded
+- better session memory for short-term progression and variety
+- stronger public-demo packaging and deployment polish
+
+With more time and resources, it could expand further:
+
+- persistent user history and progression tracking
+- recovery-aware planning across multiple sessions
+- wearable integrations
+- more advanced coaching feedback loops
+- deeper multi-agent collaboration for interpretation, planning, and critique
 
 ## Conclusion
 
-ATLAS - Adaptive Teammate Leading At Success is a compact but meaningful example of how AI agents can be used to create a helpful, safe, and practical assistant for everyday fitness. It demonstrates the value of combining structured reasoning, safety constraints, and real-world usability in one coherent system.
+ATLAS - Adaptive Teammate Leading At Success is a focused, working prototype that demonstrates how agent-inspired workflows can be practical, safe, and genuinely helpful. It combines staged reasoning, constrained AI support, and deterministic guardrails to turn a messy real-world fitness problem into a cleaner and more actionable user experience.
