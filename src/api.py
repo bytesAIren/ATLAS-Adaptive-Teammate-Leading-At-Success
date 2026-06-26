@@ -1,4 +1,8 @@
 import os
+from src.runtime_bootstrap import bootstrap_runtime
+
+bootstrap_runtime()
+
 from dotenv import load_dotenv
 
 # Load environment variables from .env at the root of the project.
@@ -8,7 +12,7 @@ load_dotenv()
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 
@@ -19,8 +23,9 @@ from src.graph.safety_node import run_safety_node
 from src.graph.validator_node import run_validator_node
 from src.graph.planning_node import run_planning_node
 from src.graph.generator import generate_workout_plan
+from src.graph.critic_node import review_workout_plan
 
-app = FastAPI(title="ATLAS - Adaptive Teammate Leading At Success API", version="2.0")
+app = FastAPI(title="Home-Gym Personal Trainer API", version="2.0")
 
 # Enable CORS for local front-end integration
 app.add_middleware(
@@ -42,6 +47,7 @@ class SessionRequestPayload(BaseModel):
     current_energy: Optional[int] = Field(None, ge=1, le=10)
     local_injuries: Optional[List[str]] = Field(default_factory=list)
     time_available: Optional[int] = Field(None, ge=10, le=180)
+    equipment_override: Optional[List[str]] = Field(default_factory=list)
     session_goals: Optional[str] = None
 
 @app.on_event("startup")
@@ -107,6 +113,7 @@ def create_session(payload: SessionRequestPayload):
             "current_energy": payload.current_energy,
             "local_injuries": payload.local_injuries or [],
             "time_available": payload.time_available,
+            "equipment_override": payload.equipment_override or [],
             "session_goals": payload.session_goals
         }
     }
@@ -125,21 +132,68 @@ def create_session(payload: SessionRequestPayload):
         active_graph_state = planned_state
         
         # 4. Generate actual workout details
-        workout_plan = generate_workout_plan(active_graph_state)
-        
+        composed_plan = generate_workout_plan(active_graph_state)
+        review_result = review_workout_plan(composed_plan, active_graph_state)
+        workout_plan = review_result["plan"]
+        critic_report = review_result["critic_report"]
+
+        planning_rules = active_graph_state.session_context.override.get("compiled_planning_rules", {})
+        agent_trace = planning_rules.get("agent_trace", [])
+        for step in agent_trace:
+            if step["step"] == "composition":
+                step["status"] = "completed"
+                step["detail"] = "Workout composition completed and produced a structured plan."
+            elif step["step"] == "critic":
+                step["status"] = "completed"
+                step["detail"] = (
+                    "Critic approved the plan."
+                    if critic_report.get("approved")
+                    else "Critic corrected the plan to enforce the hard constraints."
+                )
+
         return {
             "success": True,
             "workout_plan": workout_plan,
-            "is_sandboxed": not active_graph_state.is_onboarded
+            "is_sandboxed": not active_graph_state.is_onboarded,
+            "critic_report": critic_report,
+            "planning_summary": {
+                "effective_equipment": planning_rules.get("effective_equipment", []),
+                "applied_injuries": planning_rules.get("applied_injuries", []),
+                "downscoping_reasons": planning_rules.get("downscoping_reasons", []),
+                "blocked_movements": planning_rules.get("blocked_movements", []),
+                "cardio_trigger_reason": planning_rules.get("post_strength_cardio", {}).get("trigger_reason"),
+                "strength_request_reason": planning_rules.get("strength_request_reason"),
+                "budgeted_session_minutes": planning_rules.get("budgeted_session_minutes"),
+                "requested_session_minutes": planning_rules.get("max_duration_minutes"),
+            },
+            "agent_trace": agent_trace,
         }
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to generate session: {str(e)}")
 
+# Prevent stale browser bundles from hiding frontend changes during local iteration.
+@app.middleware("http")
+async def add_no_cache_headers(request, call_next):
+    response: Response = await call_next(request)
+    if request.url.path == "/" or request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
 # Serve the front-end SPA at root
 @app.get("/")
 def serve_root():
-    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+    return FileResponse(
+        os.path.join(STATIC_DIR, "index.html"),
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )
 
 # Mount static assets (CSS, JS) — must be after all API routes
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

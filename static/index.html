@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ATLAS — Adaptive Teammate Leading At Success for personalized workout planning">
-    <title>ATLAS // ADAPTIVE TEAMMATE</title>
+    <meta name="description" content="Home-Gym Personal Trainer - Tactical HUD for personalized workout planning">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>HOME-GYM // TACTICAL TRAINER</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=phase3-onboarding-v1">
 </head>
 <body>
 
-    <!-- ========== TOP BAR ========== -->
     <header id="topbar">
         <div class="topbar-left">
             <span class="logo-bracket">[</span>
-            <span class="logo-text">ATLAS</span>
+            <span class="logo-text">HOME-GYM</span>
             <span class="logo-bracket">]</span>
             <span class="logo-separator">//</span>
             <span class="logo-sub" id="topbar-status">SYSTEM BOOT</span>
@@ -27,7 +29,6 @@
         </div>
     </header>
 
-    <!-- ========== SCREEN: REGISTRATION ========== -->
     <section id="screen-register" class="screen active">
         <div class="screen-header">
             <span class="screen-tag">SCREEN_01</span>
@@ -37,25 +38,23 @@
 
         <form id="onboarding-form" autocomplete="off">
             <div class="form-grid">
-                <!-- Row 1 -->
                 <div class="form-field">
                     <label for="field-nickname">CALLSIGN</label>
                     <input type="text" id="field-nickname" name="nickname" placeholder="AlphaNumeric" maxlength="15" required>
                 </div>
                 <div class="form-field">
                     <label for="field-age">AGE_YRS</label>
-                    <input type="number" id="field-age" name="age" placeholder="16–90" min="16" max="90" required>
+                    <input type="number" id="field-age" name="age" placeholder="16-90" min="16" max="90" required>
                 </div>
                 <div class="form-field">
                     <label for="field-weight">MASS_KG</label>
-                    <input type="number" id="field-weight" name="weight_kg" placeholder="40.0–200.0" step="0.1" min="40" max="200" required>
+                    <input type="number" id="field-weight" name="weight_kg" placeholder="40.0-200.0" step="0.1" min="40" max="200" required>
                 </div>
                 <div class="form-field">
                     <label for="field-height">HEIGHT_CM</label>
-                    <input type="number" id="field-height" name="height_cm" placeholder="130–220" step="0.1" min="130" max="220" required>
+                    <input type="number" id="field-height" name="height_cm" placeholder="130-220" step="0.1" min="130" max="220" required>
                 </div>
 
-                <!-- Row 2: Selectors -->
                 <div class="form-field">
                     <label>EXP_LEVEL</label>
                     <div class="selector-group" id="sel-experience">
@@ -82,15 +81,16 @@
                 </div>
             </div>
 
-            <!-- Equipment Checklist -->
             <div class="form-section">
                 <label class="section-label">EQUIPMENT MANIFEST</label>
                 <div class="checkbox-grid" id="equipment-grid">
-                    <!-- Populated dynamically from /api/equipment -->
+                </div>
+                <div class="form-field full-width">
+                    <label for="field-custom-equipment">CUSTOM_EQUIPMENT</label>
+                    <textarea id="field-custom-equipment" name="custom_equipment" rows="2" placeholder="e.g. walking pad, ab wheel, foam roller. Separate each item with a comma."></textarea>
                 </div>
             </div>
 
-            <!-- Objectives Checklist -->
             <div class="form-section">
                 <label class="section-label">MISSION OBJECTIVES</label>
                 <div class="checkbox-grid" id="objectives-grid">
@@ -98,21 +98,24 @@
                     <label class="chk-label"><input type="checkbox" value="run a 10k"><span class="chk-box"></span>RUN A 10K</label>
                     <label class="chk-label"><input type="checkbox" value="60 minute ride"><span class="chk-box"></span>60 MIN RIDE</label>
                     <label class="chk-label"><input type="checkbox" value="healthy life"><span class="chk-box"></span>HEALTHY LIFE</label>
+                    <label class="chk-label"><input type="checkbox" value="lose weight"><span class="chk-box"></span>LOSE WEIGHT</label>
+                    <label class="chk-label"><input type="checkbox" value="gain muscle"><span class="chk-box"></span>GAIN MUSCLE</label>
                     <label class="chk-label"><input type="checkbox" value="10k steps a day"><span class="chk-box"></span>10K STEPS/DAY</label>
+                </div>
+                <div class="form-field full-width">
+                    <label for="field-custom-objectives">CUSTOM_OBJECTIVES</label>
+                    <textarea id="field-custom-objectives" name="custom_objectives" rows="2" placeholder="e.g. improve posture, train for hiking, rebuild cardio base. Separate each goal with a comma."></textarea>
                 </div>
             </div>
 
-            <!-- Validation Feedback -->
             <div id="validation-feedback" class="feedback-box hidden"></div>
 
-            <!-- Submit -->
             <button type="submit" class="btn-primary" id="btn-register">
-                <span class="btn-icon">▸</span> REGISTER ATHLETE
+                <span class="btn-icon">></span> REGISTER ATHLETE
             </button>
         </form>
     </section>
 
-    <!-- ========== SCREEN: SESSION CONFIG ========== -->
     <section id="screen-session" class="screen">
         <div class="screen-header">
             <span class="screen-tag">SCREEN_02</span>
@@ -120,9 +123,7 @@
             <p class="screen-sub">Configure today's parameters. Overrides downscope your baseline profile.</p>
         </div>
 
-        <div class="session-profile-bar" id="profile-bar">
-            <!-- Populated after onboarding -->
-        </div>
+        <div class="session-profile-bar" id="profile-bar"></div>
 
         <form id="session-form" autocomplete="off">
             <div class="form-grid">
@@ -133,7 +134,7 @@
                 </div>
                 <div class="form-field">
                     <label for="field-time">TIME_AVAIL (min)</label>
-                    <input type="number" id="field-time" name="time_available" placeholder="30–180" min="10" max="180" value="60">
+                    <input type="number" id="field-time" name="time_available" placeholder="30-180" min="10" max="180" value="60">
                 </div>
                 <div class="form-field full-width">
                     <label for="field-goals">SESSION_GOALS</label>
@@ -146,7 +147,7 @@
             </div>
 
             <button type="submit" class="btn-primary" id="btn-generate">
-                <span class="btn-icon">▸</span> GENERATE OPERATION
+                <span class="btn-icon">></span> GENERATE OPERATION
             </button>
         </form>
 
@@ -156,7 +157,6 @@
         </div>
     </section>
 
-    <!-- ========== SCREEN: WORKOUT PLAN ========== -->
     <section id="screen-workout" class="screen">
         <div class="screen-header">
             <span class="screen-tag">SCREEN_03</span>
@@ -164,15 +164,13 @@
             <p class="screen-sub" id="workout-meta"></p>
         </div>
 
-        <div id="workout-content">
-            <!-- Dynamically rendered workout plan -->
-        </div>
+        <div id="workout-content"></div>
 
         <div class="workout-actions">
-            <button class="btn-secondary" id="btn-new-session">◂ NEW SESSION</button>
+            <button class="btn-secondary" id="btn-new-session">< NEW SESSION</button>
         </div>
     </section>
 
-    <script src="./js/app.js"></script>
+    <script src="/static/js/app.js?v=phase3-onboarding-v1"></script>
 </body>
 </html>

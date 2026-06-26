@@ -1,5 +1,5 @@
 /* ============================================
-   ATLAS TACTICAL HUD — Application Logic
+   HOME-GYM TACTICAL HUD — Application Logic
    Pure Vanilla JS — No frameworks
    ============================================ */
 
@@ -9,57 +9,6 @@ const API = '';
 let selectedExperience = null;
 let selectedPreference = null;
 let selectedFrequency = null;
-let demoProfile = null;
-let demoState = { is_onboarded: false, user_profile: null };
-
-const DEMO_EQUIPMENT = [
-    { id: 'adjustable-bench', name: 'Adjustable Bench' },
-    { id: 'dumbbells-15kg', name: '15kg Dumbbells' },
-    { id: 'dumbbells-10kg', name: '10kg Dumbbells' },
-    { id: 'dumbbells-8kg', name: '8kg Dumbbells' },
-    { id: 'dumbbells-5kg', name: '5kg Dumbbells' },
-    { id: 'resistance-band', name: 'Resistance Bands' },
-];
-
-function buildDemoPlan(profile, session) {
-    const timeAvailable = session.time_available || 60;
-    const isCardio = profile.training_preference === 'Cardio' || profile.training_preference === 'Hybrid' || (profile.objectives || []).some(obj => /5k|10k|ride|cardio/i.test(obj));
-    const strengthCount = Math.max(2, Math.floor((timeAvailable - (isCardio ? 60 : 0)) / 10));
-    const warmupMinutes = 5;
-    const strengthMinutes = Math.min(strengthCount, 4) * 10;
-    const cardioMinutes = isCardio ? 60 : 0;
-
-    const exercises = [
-        { name: 'bodyweight squat', sets: 3, reps: '10', load: 'BW', notes: 'Control the tempo and keep the torso tall.' },
-        { name: 'incline push-up', sets: 3, reps: '8-12', load: 'BW', notes: 'Use the bench to keep form consistent.' },
-        { name: 'band row', sets: 3, reps: '12', load: 'band', notes: 'Drive elbows back and avoid shrugging.' },
-    ].slice(0, Math.min(strengthCount, 3));
-
-    return {
-        athlete_nickname: profile.nickname || 'ATHLETE',
-        experience_level: profile.experience_level || 'Beginner',
-        estimated_duration_minutes: warmupMinutes + strengthMinutes + cardioMinutes,
-        warm_up: {
-            title: 'mobility and activation',
-            duration_minutes: warmupMinutes,
-            instructions: [
-                'Perform 2 rounds of arm circles, hip hinges, and marching in place.',
-                'Keep the effort easy and focus on range of motion.',
-            ],
-        },
-        strength_circuit: {
-            title: 'controlled strength circuit',
-            duration_minutes: strengthMinutes,
-            exercises,
-        },
-        cardio_finisher: isCardio ? {
-            title: 'aerobic base finisher',
-            duration_minutes: cardioMinutes,
-            target_heart_rate_bpm: 130,
-            instructions: 'Maintain a steady pace and stay within ±5 BPM of the target heart rate.',
-        } : null,
-    };
-}
 
 // ---- DOM References ----
 const screens = {
@@ -111,31 +60,21 @@ function initSelectorGroups() {
 
 // ---- Equipment Loading ----
 async function loadEquipment() {
-    const grid = document.getElementById('equipment-grid');
-    if (!grid) return;
-
     try {
         const res = await fetch(`${API}/api/equipment`);
-        if (!res.ok) throw new Error('backend unavailable');
         const items = await res.json();
-        renderEquipment(items);
+        const grid = document.getElementById('equipment-grid');
+        grid.innerHTML = '';
+        
+        items.forEach(item => {
+            const label = document.createElement('label');
+            label.className = 'chk-label';
+            label.innerHTML = `<input type="checkbox" value="${item.id}"><span class="chk-box"></span>${item.name.toUpperCase()}`;
+            grid.appendChild(label);
+        });
     } catch (err) {
-        console.info('Using built-in demo equipment list.');
-        renderEquipment(DEMO_EQUIPMENT);
+        console.error('Failed to load equipment:', err);
     }
-}
-
-function renderEquipment(items) {
-    const grid = document.getElementById('equipment-grid');
-    if (!grid) return;
-    grid.innerHTML = '';
-
-    items.forEach(item => {
-        const label = document.createElement('label');
-        label.className = 'chk-label';
-        label.innerHTML = `<input type="checkbox" value="${item.id}"><span class="chk-box"></span>${item.name.toUpperCase()}`;
-        grid.appendChild(label);
-    });
 }
 
 // ---- Energy Slider ----
@@ -173,9 +112,11 @@ async function handleOnboarding(e) {
 
     const equipmentChecks = document.querySelectorAll('#equipment-grid input:checked');
     const equipment_list = Array.from(equipmentChecks).map(c => c.value);
+    const custom_equipment = document.getElementById('field-custom-equipment').value.trim();
 
     const objectiveChecks = document.querySelectorAll('#objectives-grid input:checked');
     const objectives = Array.from(objectiveChecks).map(c => c.value);
+    const custom_objectives = document.getElementById('field-custom-objectives').value.trim();
 
     const payload = {
         nickname,
@@ -187,6 +128,8 @@ async function handleOnboarding(e) {
         frequency: selectedFrequency,
         equipment_list,
         objectives,
+        custom_equipment,
+        custom_objectives,
     };
 
     const btn = document.getElementById('btn-register');
@@ -204,8 +147,6 @@ async function handleOnboarding(e) {
         if (data.success) {
             showFeedback(data.message, true);
             setTimeout(() => {
-                demoProfile = payload;
-                demoState = { is_onboarded: true, user_profile: payload };
                 renderProfileBar(payload);
                 showScreen('session');
             }, 800);
@@ -213,13 +154,7 @@ async function handleOnboarding(e) {
             showFeedback(data.message, false);
         }
     } catch (err) {
-        demoProfile = payload;
-        demoState = { is_onboarded: true, user_profile: payload };
-        showFeedback('DEMO MODE: Profile captured locally. You can continue without the backend.', true);
-        setTimeout(() => {
-            renderProfileBar(payload);
-            showScreen('session');
-        }, 800);
+        showFeedback('COMMS ERROR: Failed to reach server.', false);
     } finally {
         btn.disabled = false;
         btn.querySelector('.btn-icon').textContent = '▸';
@@ -274,15 +209,18 @@ async function handleSession(e) {
         const data = await res.json();
 
         if (data.success || data.workout_plan) {
-            renderWorkoutPlan(data.workout_plan);
+            renderWorkoutPlan(data.workout_plan, {
+                criticReport: data.critic_report || null,
+                planningSummary: data.planning_summary || null,
+                agentTrace: data.agent_trace || [],
+                isSandboxed: !!data.is_sandboxed,
+            });
             showScreen('workout');
         } else {
-            throw new Error(data.detail || 'Unknown error');
+            alert('Failed to compile plan: ' + (data.detail || 'Unknown error'));
         }
     } catch (err) {
-        const plan = buildDemoPlan(demoProfile || {}, payload);
-        renderWorkoutPlan(plan);
-        showScreen('workout');
+        alert('COMMS ERROR: Failed to reach server.');
     } finally {
         btn.disabled = false;
         loader.classList.add('hidden');
@@ -290,13 +228,13 @@ async function handleSession(e) {
 }
 
 // ---- Workout Renderer ----
-function renderWorkoutPlan(plan) {
+function renderWorkoutPlan(plan, sessionMeta = {}) {
     const container = document.getElementById('workout-content');
     container.innerHTML = '';
 
     // Title & Meta
     const title = document.getElementById('workout-title');
-    const meta  = document.getElementById('workout-meta');
+    const metaText = document.getElementById('workout-meta');
     title.textContent = `OPERATION // ${(plan.athlete_nickname || 'ATHLETE').toUpperCase()}`;
 
     // Build time breakdown string
@@ -304,10 +242,16 @@ function renderWorkoutPlan(plan) {
     const strengthMin  = plan.strength_circuit?.duration_minutes || 0;
     const cardioMin    = plan.cardio_finisher?.duration_minutes || 0;
     const totalMin     = plan.estimated_duration_minutes || (warmupMin + strengthMin + cardioMin);
-    let breakdown = `${warmupMin}min warmup`;
-    if (strengthMin > 0) breakdown += ` + ${strengthMin}min strength`;
-    if (cardioMin   > 0) breakdown += ` + ${cardioMin}min cardio`;
-    meta.textContent = `LEVEL: ${(plan.experience_level || '?').toUpperCase()} | ${breakdown} = ${totalMin} MIN TOTAL`;
+    const requestedSessionMinutes = sessionMeta.planningSummary?.requested_session_minutes || (strengthMin + cardioMin);
+    const allocatedSessionMinutes = sessionMeta.planningSummary?.budgeted_session_minutes || (strengthMin + cardioMin);
+    const budgetLabel = requestedSessionMinutes !== allocatedSessionMinutes
+        ? `${requestedSessionMinutes} MIN REQUESTED (${allocatedSessionMinutes} ALLOCATED)`
+        : `${requestedSessionMinutes} MIN`;
+    let breakdown = `${strengthMin}min strength`;
+    if (cardioMin > 0) breakdown += ` + ${cardioMin}min cardio`;
+    metaText.textContent = `LEVEL: ${(plan.experience_level || '?').toUpperCase()} | SESSION BUDGET ${budgetLabel} | ${breakdown} + ${warmupMin}min warmup = ${totalMin} MIN TOTAL`;
+
+    container.appendChild(createSystemReview(sessionMeta));
 
     // Warm-up
     if (plan.warm_up) {
@@ -373,6 +317,77 @@ function renderWorkoutPlan(plan) {
     }
 }
 
+function createSystemReview(meta) {
+    const section = createSection('TRACE', 'System Review', '', meta.isSandboxed ? 'SANDBOXED' : 'LIVE PROFILE');
+    section.classList.add('system-review');
+
+    const trace = document.createElement('div');
+    trace.className = 'trace-grid';
+    const traceSteps = (meta.agentTrace || []);
+    if (!traceSteps.length) {
+        const empty = document.createElement('div');
+        empty.className = 'trace-card pending';
+        empty.innerHTML = `
+            <div class="trace-step">TRACE</div>
+            <div class="trace-status">MISSING</div>
+            <div class="trace-detail">No planning trace was returned by the backend for this session.</div>
+        `;
+        trace.appendChild(empty);
+    }
+    traceSteps.forEach(step => {
+        const card = document.createElement('div');
+        card.className = `trace-card ${step.status || 'pending'}`;
+        card.innerHTML = `
+            <div class="trace-step">${(step.step || '').toUpperCase()}</div>
+            <div class="trace-status">${(step.status || 'pending').toUpperCase()}</div>
+            <div class="trace-detail">${step.detail || ''}</div>
+        `;
+        trace.appendChild(card);
+    });
+    section.appendChild(trace);
+
+    if (meta.planningSummary) {
+        const summary = document.createElement('div');
+        summary.className = 'constraint-panel';
+        const planning = meta.planningSummary;
+        const reasonLines = [
+            ...(planning.downscoping_reasons || []),
+            planning.cardio_trigger_reason,
+            planning.strength_request_reason,
+        ].filter(Boolean);
+
+        summary.innerHTML = `
+            <div class="constraint-title">ACTIVE CONSTRAINTS</div>
+            ${planning.requested_session_minutes ? `<div class="constraint-copy">Requested session budget: ${planning.requested_session_minutes} minutes (${planning.budgeted_session_minutes || planning.requested_session_minutes} minutes allocated to strength + cardio).</div>` : ''}
+            <div class="constraint-tags">
+                ${(planning.effective_equipment || []).map(item => `<span class="constraint-tag">${item}</span>`).join('')}
+            </div>
+            ${(planning.applied_injuries || []).length ? `<div class="constraint-copy">Injuries: ${planning.applied_injuries.join(', ')}</div>` : ''}
+            ${(planning.blocked_movements || []).length ? `<div class="constraint-copy">Blocked movements: ${planning.blocked_movements.join(', ')}</div>` : ''}
+            <div class="constraint-list">
+                ${reasonLines.map(line => `<div class="constraint-copy">${line}</div>`).join('')}
+            </div>
+        `;
+        section.appendChild(summary);
+    }
+
+    if (meta.criticReport) {
+        const critic = document.createElement('div');
+        critic.className = `critic-panel ${meta.criticReport.approved ? 'approved' : 'corrected'}`;
+        const findings = meta.criticReport.findings || [];
+        critic.innerHTML = `
+            <div class="constraint-title">CRITIC REVIEW</div>
+            <div class="constraint-copy">
+                ${meta.criticReport.approved ? 'Plan approved without corrections.' : 'Plan corrected to enforce hard constraints.'}
+            </div>
+            ${findings.length ? `<div class="constraint-list">${findings.map(line => `<div class="constraint-copy">${line}</div>`).join('')}</div>` : ''}
+        `;
+        section.appendChild(critic);
+    }
+
+    return section;
+}
+
 
 function createSection(tag, title, duration, badge) {
     const section = document.createElement('div');
@@ -396,19 +411,17 @@ async function handleReset() {
     if (!confirm('CONFIRM SYSTEM RESET?\nThis will erase your profile and return to registration.')) return;
     try {
         await fetch(`${API}/api/reset`, { method: 'POST' });
+        // Reset local state
+        selectedExperience = null;
+        selectedPreference = null;
+        selectedFrequency = null;
+        document.querySelectorAll('.sel-btn.selected').forEach(b => b.classList.remove('selected'));
+        document.getElementById('onboarding-form').reset();
+        hideFeedback();
+        showScreen('register');
     } catch (err) {
-        // Demo mode fallback: ignore and continue locally.
+        alert('Reset failed.');
     }
-
-    selectedExperience = null;
-    selectedPreference = null;
-    selectedFrequency = null;
-    demoProfile = null;
-    demoState = { is_onboarded: false, user_profile: null };
-    document.querySelectorAll('.sel-btn.selected').forEach(b => b.classList.remove('selected'));
-    document.getElementById('onboarding-form').reset();
-    hideFeedback();
-    showScreen('register');
 }
 
 // ---- Init ----
@@ -427,15 +440,12 @@ async function init() {
         const res = await fetch(`${API}/api/state`);
         const state = await res.json();
         if (state.is_onboarded && state.user_profile) {
-            demoProfile = state.user_profile;
-            demoState = state;
             renderProfileBar(state.user_profile);
             showScreen('session');
         } else {
             showScreen('register');
         }
     } catch {
-        demoState = { is_onboarded: false, user_profile: null };
         showScreen('register');
     }
 }
