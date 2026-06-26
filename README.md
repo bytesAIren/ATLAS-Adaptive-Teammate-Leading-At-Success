@@ -4,9 +4,9 @@
   <img src="media_gallery/atlas-cover.png" alt="ATLAS cover image" width="800" />
 </p>
 
-<p align="center">
+<p align="center"><em><strong>
   A safe, adaptive AI coaching experience for home workouts built with agent-style planning, validation, and safety checks.
-</p>
+</em></strong></p>
 
 ## Overview
 
