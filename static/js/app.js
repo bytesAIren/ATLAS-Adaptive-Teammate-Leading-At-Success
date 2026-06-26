@@ -4,6 +4,17 @@
    ============================================ */
 
 const API = '';
+const FALLBACK_EQUIPMENT = [
+    { id: 'adjustable_bench', name: 'Adjustable Bench' },
+    { id: 'dumbbells', name: 'Dumbbells' },
+    { id: 'resistance_bands', name: 'Resistance Bands' },
+    { id: 'yoga_mat', name: 'Yoga Mat' },
+    { id: 'pullup_bar', name: 'Pull-up Bar' },
+    { id: 'stationary_bike', name: 'Stationary Bike / Cyclette' },
+    { id: 'treadmill', name: 'Treadmill' },
+    { id: 'kettlebell', name: 'Kettlebell' },
+    { id: 'jump_rope', name: 'Jump Rope' },
+];
 
 // ---- State ----
 let selectedExperience = null;
@@ -59,21 +70,28 @@ function initSelectorGroups() {
 }
 
 // ---- Equipment Loading ----
+function renderEquipmentList(items) {
+    const grid = document.getElementById('equipment-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    items.forEach(item => {
+        const label = document.createElement('label');
+        label.className = 'chk-label';
+        label.innerHTML = `<input type="checkbox" value="${item.id}"><span class="chk-box"></span>${item.name.toUpperCase()}`;
+        grid.appendChild(label);
+    });
+}
+
 async function loadEquipment() {
     try {
         const res = await fetch(`${API}/api/equipment`);
+        if (!res.ok) throw new Error(`Equipment request failed with status ${res.status}`);
         const items = await res.json();
-        const grid = document.getElementById('equipment-grid');
-        grid.innerHTML = '';
-        
-        items.forEach(item => {
-            const label = document.createElement('label');
-            label.className = 'chk-label';
-            label.innerHTML = `<input type="checkbox" value="${item.id}"><span class="chk-box"></span>${item.name.toUpperCase()}`;
-            grid.appendChild(label);
-        });
+        renderEquipmentList(items);
     } catch (err) {
         console.error('Failed to load equipment:', err);
+        renderEquipmentList(FALLBACK_EQUIPMENT);
     }
 }
 
