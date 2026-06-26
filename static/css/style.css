@@ -1,5 +1,5 @@
 /* ============================================
-   ATLAS TACTICAL HUD — Design System
+   HOME-GYM TACTICAL HUD — Design System
    Palette: Dark Navy + Ice Blue + White
    Typography: DM Mono + Space Grotesk
    ============================================ */
@@ -209,7 +209,8 @@ body {
 }
 
 .form-field input[type="text"],
-.form-field input[type="number"] {
+.form-field input[type="number"],
+.form-field textarea {
     background: var(--bg-field);
     border: 1px solid var(--accent-border);
     color: var(--text-primary);
@@ -220,12 +221,19 @@ body {
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+.form-field textarea {
+    resize: vertical;
+    min-height: 64px;
+    line-height: 1.5;
+}
+
 .form-field input:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 1px var(--accent-border), inset 0 0 20px var(--accent-dim);
 }
 
-.form-field input::placeholder {
+.form-field input::placeholder,
+.form-field textarea::placeholder {
     color: var(--text-dim);
     font-size: 0.8rem;
 }
@@ -652,6 +660,103 @@ body {
     padding-top: 24px;
     border-top: 1px solid var(--accent-border);
     margin-top: 16px;
+}
+
+/* ---------- SYSTEM REVIEW ---------- */
+.trace-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.system-review {
+    border: 1px solid var(--accent-border);
+    background: linear-gradient(180deg, rgba(79, 195, 247, 0.06), rgba(79, 195, 247, 0.01));
+    padding: 14px 16px 18px;
+}
+
+.trace-card {
+    background: var(--bg-field);
+    border: 1px solid var(--accent-border);
+    padding: 12px;
+}
+
+.trace-card.completed {
+    border-color: rgba(102, 187, 106, 0.35);
+    box-shadow: inset 0 0 0 1px rgba(102, 187, 106, 0.08);
+}
+
+.trace-card.pending {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.trace-step {
+    color: var(--accent);
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+}
+
+.trace-status {
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+
+.trace-detail,
+.constraint-copy {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.constraint-panel,
+.critic-panel {
+    background: var(--bg-field);
+    border: 1px solid var(--accent-border);
+    padding: 16px;
+    margin-bottom: 10px;
+}
+
+.critic-panel.corrected {
+    border-color: rgba(239, 83, 80, 0.35);
+}
+
+.critic-panel.approved {
+    border-color: rgba(102, 187, 106, 0.35);
+}
+
+.constraint-title {
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+}
+
+.constraint-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.constraint-tag {
+    font-size: 0.65rem;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
+    padding: 4px 7px;
+    letter-spacing: 1px;
+}
+
+.constraint-list {
+    display: grid;
+    gap: 6px;
+    margin-top: 10px;
 }
 
 /* ---------- RESPONSIVE ---------- */

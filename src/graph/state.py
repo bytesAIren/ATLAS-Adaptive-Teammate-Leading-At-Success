@@ -33,26 +33,32 @@ def get_default_safe_session_context() -> SessionContext:
         current_energy=5,
         local_injuries=[],
         time_available=30,
-        equipment_override=["Light Resistance Bands"],
+        equipment_override=[],
         session_goals="Introduction and Safety Orientation",
         override={
             "max_load_capacity": "5 kg",
             "movement_allowlist": [
-                "bodyweight squat", 
-                "wall push-up", 
-                "light band pull", 
-                "glute bridge", 
-                "plank"
+                "Bodyweight Squat",
+                "Wall Push-up",
+                "Light Band Pull",
+                "Glute Bridge",
+                "Plank",
             ],
             "blocked_movements": [
-                "overhead press", 
-                "barbell back squat", 
-                "deadlift", 
-                "kettlebell swing", 
-                "clean and jerk", 
-                "snatch"
-            ]
-        }
+                "Overhead Press",
+                "Barbell Back Squat",
+                "Deadlift",
+                "Kettlebell Swing",
+                "Clean and Jerk",
+                "Snatch",
+            ],
+            "blocked_keywords": [
+                "overhead",
+                "jerk",
+                "snatch",
+                "swing",
+            ],
+        },
     )
 
 def get_default_safe_state() -> GraphState:
