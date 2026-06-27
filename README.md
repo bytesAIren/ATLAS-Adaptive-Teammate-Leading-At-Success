@@ -112,7 +112,7 @@ The backend is organized around a small set of role-based modules:
 
 4. **Generation**
    - creates a structured workout plan inside the compiled limits
-   - uses Gemini as an optional constrained assistance layer
+   - uses Gemini to power the richer constrained generation path
 
 5. **Critic Review**
    - checks the plan against the authoritative rules
@@ -159,13 +159,13 @@ ATLAS-Adaptive_Teammate_Leading_At_Success/
 - Pydantic
 - SQLite-backed exercise and equipment catalog
 - HTML/CSS/JavaScript
-- Google Gemini as an optional assistance layer for clarification and constrained plan generation
+- Google Gemini for natural-language clarification and constrained workout generation
 
 ## Current Implementation Notes
 
 - The active graph state is stored in application memory for the running server process.
 - SQLite is currently used for the exercise and equipment catalog, not as full long-term user-state persistence.
-- The app works without a Gemini API key by falling back to deterministic validation messaging and deterministic workout composition rules.
+- ATLAS can run without a Gemini API key by falling back to deterministic validation messaging and deterministic workout composition rules, but the richer agentic generation path is enabled when Gemini is available.
 
 ## Why This Fits The Kaggle Capstone
 
@@ -202,7 +202,9 @@ The application will be available locally through the FastAPI server at `http://
 
 ## Environment Variables
 
-Gemini is optional but recommended if you want the AI-assisted clarification and constrained generation path.
+Gemini is strongly recommended for the full ATLAS experience.
+
+ATLAS can run without a Gemini API key in a deterministic fallback mode that preserves validation, planning, safety enforcement, and critic review. Enabling Gemini unlocks the richer agentic path for natural-language clarification and constrained workout generation.
 
 ```bash
 export GEMINI_API_KEY="your_api_key_here"
