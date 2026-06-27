@@ -54,6 +54,16 @@ ATLAS is not presented as a full autonomous multi-agent platform. Instead, it us
 
 This structure is what makes the system feel agentic. The project combines AI-assisted clarification and constrained plan generation with deterministic safety enforcement.
 
+## Workflow Overview
+
+<p align="center">
+  <img src="media_gallery/Safety-First_Agentic_Workflow_Overview.png" alt="ATLAS safety-first agentic workflow overview" width="800" />
+</p>
+
+<p align="center"><em>
+  ATLAS turns user input into a constrained workout plan through validation, safety sandboxing, planning, generation, and critic review.
+</em></p>
+
 ## How ATLAS Works
 
 ATLAS follows a concrete five-step workflow:
@@ -216,11 +226,14 @@ To keep the Kaggle submission organized, the repository includes a dedicated fol
 
 - Media Gallery: [media_gallery](media_gallery/)
 - Cover image: [media_gallery/atlas-cover.png](media_gallery/atlas-cover.png)
+- Workflow infographic: [media_gallery/Safety-First_Agentic_Workflow_Overview.png](media_gallery/Safety-First_Agentic_Workflow_Overview.png)
 - Screenshots:
-  - [media_gallery/Screenshot 2026-06-25 221313.png](media_gallery/Screenshot%202026-06-25%20221313.png)
-  - [media_gallery/Screenshot 2026-06-25 221458.png](media_gallery/Screenshot%202026-06-25%20221458.png)
-  - [media_gallery/Screenshot 2026-06-25 221746.png](media_gallery/Screenshot%202026-06-25%20221746.png)
-- Submission video: [media_gallery/ATLAS__Agentic_Fitness.mp4](media_gallery/ATLAS__Agentic_Fitness.mp4)
+  - [media_gallery/Screenshot 2026-06-26 214151.png](media_gallery/Screenshot%202026-06-26%20214151.png)
+  - [media_gallery/Screenshot 2026-06-26 214309.png](media_gallery/Screenshot%202026-06-26%20214309.png)
+  - [media_gallery/Screenshot 2026-06-26 214405.png](media_gallery/Screenshot%202026-06-26%20214405.png)
+  - [media_gallery/Screenshot 2026-06-26 214416.png](media_gallery/Screenshot%202026-06-26%20214416.png)
+  - [media_gallery/Screenshot 2026-06-26 214427.png](media_gallery/Screenshot%202026-06-26%20214427.png)
+- Submission video: [media_gallery/ATLAS__Concierge_Agent.mp4](media_gallery/ATLAS__Concierge_Agent.mp4)
 
 ## Safety And Design Choices
 
